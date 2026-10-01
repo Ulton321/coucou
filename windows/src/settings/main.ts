@@ -243,12 +243,41 @@ function apiSection(hasKey: boolean): HTMLElement {
 
   clearBtn.style.display = hasKey ? "" : "none";
 
+  const backend = h("select", {}) as HTMLSelectElement;
+  backend.append(
+    h("option", { value: "api", text: "API key" }),
+    h("option", { value: "subscription", text: "Claude subscription (via Claude Code)" }),
+  );
+  backend.value = settings.chatBackend;
+  const keyRow = h("div", { class: "row" }, h("label", { text: "API key" }), field, saveBtn, clearBtn);
+  const subNote = h("span", {
+    class: "hint",
+    text: "Uses the Claude Code you're signed in to — chats count toward your plan's usage limits. Replies take a few seconds longer.",
+  });
+
+  function applyBackend() {
+    const sub = settings.chatBackend === "subscription";
+    keyRow.style.display = sub ? "none" : "";
+    state.style.display = sub ? "none" : "";
+    subNote.style.display = sub ? "" : "none";
+    if (sub) dot.style.background = "#22c55e";
+    else void refresh();
+  }
+  backend.addEventListener("change", () => {
+    settings.chatBackend = backend.value as Settings["chatBackend"];
+    void save();
+    applyBackend();
+  });
+  applyBackend();
+
   return h(
     "section",
     {},
     h("h2", {}, dot, h("span", { text: "Claude" })),
+    h("div", { class: "row" }, h("label", { text: "Chat uses" }), backend),
     state,
-    h("div", { class: "row" }, h("label", { text: "API key" }), field, saveBtn, clearBtn),
+    subNote,
+    keyRow,
     h("div", { class: "row" }, h("label", { text: "Model" }), model),
     feedback,
   );

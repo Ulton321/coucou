@@ -18,3 +18,13 @@ DerivedData/
 # Local only (never published)
 .claude/
 _prive/
+
+# Local binaries and stray clones (never published)
+/*.exe
+windows/coucou/
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key

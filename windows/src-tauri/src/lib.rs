@@ -1,6 +1,7 @@
 // Coucou for Windows — app wiring and the commands the island calls.
 
 mod claude;
+mod claude_code;
 mod files;
 mod hooks;
 mod integrations;
@@ -248,8 +249,15 @@ async fn chat_send(
     query: String,
     context: Option<ChatContext>,
 ) -> Result<ChatReply, String> {
-    let model = shared.settings.lock().unwrap().model.clone();
-    claude::send(&chat, &model, query, context).await
+    let (model, backend) = {
+        let s = shared.settings.lock().unwrap();
+        (s.model.clone(), s.chat_backend.clone())
+    };
+    if backend == "subscription" {
+        claude_code::send(&chat, &model, query, context).await
+    } else {
+        claude::send(&chat, &model, query, context).await
+    }
 }
 
 #[tauri::command]
